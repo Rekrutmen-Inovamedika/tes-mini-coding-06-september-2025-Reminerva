@@ -22,8 +22,8 @@
         "miloschuman/yii2-highcharts-widget": "*",
         "2amigos/yii2-chartjs-widget": "~2.0",
         "2amigos/yii2-date-picker-widget": "^0.1.0",
-        "mdmsoft/yii2-admin": "*",
-        "yii2mod/yii2-dynamic-form": "*",
+        "mdmsoft/yii2-admin": "~2.0",
+        "wbraganca/yii2-dynamicform": "^2.0",
         "kartik-v/yii2-widget-select2": "@dev"
 
     },
@@ -37,7 +37,6 @@
         "codeception/lib-innerbrowser": "^3.0 || ^1.1",
         "codeception/module-asserts": "^3.0 || ^1.1",
         "codeception/module-yii2": "^1.1",
-        "codeception/module-filesystem": "^2.0 || ^1.1",
         "codeception/verify": "^2.2",
         "symfony/browser-kit": "^6.0 || >=2.7 <=4.2.4"
     },

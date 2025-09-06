@@ -80,6 +80,7 @@ class TransaksiController extends Controller
     public function actionCreate()
     {
         $model = new Transaksi();
+        $model->total_harga = $model->getTotalHarga();
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }

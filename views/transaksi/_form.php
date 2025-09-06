@@ -3,6 +3,9 @@
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\helpers\ArrayHelper;
+use app\models\Pasien;
+use app\models\Obat;
+use app\models\Tindakan;
 
 /** @var yii\web\View $this */
 /** @var app\models\Transaksi $model */
@@ -14,17 +17,25 @@ use yii\helpers\ArrayHelper;
     <?php $form = ActiveForm::begin(); ?>
 
     <?= $form->field($model, 'pasien_id')->dropDownList(
-        ArrayHelper::map(\app\models\Pasien::find()->all(), 'id', 'nama'),
+        ArrayHelper::map(Pasien::find()->all(), 'id', 'nama'),
         ['prompt' => 'Pilih Pasien']
     ) ?>
-    <?= $form->field($model, 'tindakanIds')->checkboxList(ArrayHelper::map(\app\models\Tindakan::find()->all(), 'id', 'nama_tindakan')) ?>
-    <?= $form->field($model, 'obat1_id')->dropDownList(\app\models\Obat::getList(), ['prompt' => 'Pilih Obat 1', 'data-harga' => '']) ?>
 
-    <?= $form->field($model, 'obat2_id')->dropDownList(\app\models\Obat::getList(), ['prompt' => 'Pilih Obat 2', 'data-harga' => '']) ?>
+    <?= $form->field($model, 'tindakanIds')->checkboxList(
+        ArrayHelper::map(Tindakan::find()->all(), 'id', 'nama_tindakan')
+    ) ?>
 
-    <?= $form->field($model, 'obat3_id')->dropDownList(\app\models\Obat::getList(), ['prompt' => 'Pilih Obat 3', 'data-harga' => '']) ?>
-    <?= $form->field($model, 'total_harga')->textInput() ?>
-    <?= $form->field($model, 'total_harga')->textInput(['readonly' => true]) ?>
+    <?php for ($i = 1; $i <= 3; $i++): ?>
+        <?= $form->field($model, "obat{$i}_id")->dropDownList(
+            Obat::getList(),
+            ['prompt' => "Pilih Obat {$i}"]
+        ) ?>
+        <?= $form->field($model, "jumlah{$i}")->textInput([
+            'type' => 'number',
+            'value' => 1,
+            'min' => 1
+        ]) ?>
+    <?php endfor; ?>
 
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
@@ -33,8 +44,9 @@ use yii\helpers\ArrayHelper;
     <?php ActiveForm::end(); ?>
 
 </div>
-<?php
 
+<?php
+// JS untuk update total harga secara live
 $this->registerJs('
     var tindakanPrice = ' . json_encode($model->tindakanPrices) . ';
     var obatPrice = ' . json_encode($model->obatPrices) . ';
@@ -48,25 +60,26 @@ $this->registerJs('
                 tindakanTotal += tindakanPrice[tindakanId];
             }
         });
-        
+
         var obatTotal = 0;
-        var obat1Price = obatPrice[$("#transaksi-obat1_id").val()] || 0;
-        obatTotal += obat1Price * $("#transaksi-jumlah_obat1").val();
-        var obat2Price = obatPrice[$("#transaksi-obat2_id").val()] || 0;
-        obatTotal += obat2Price * $("#transaksi-jumlah_obat2").val();
-        var obat3Price = obatPrice[$("#transaksi-obat3_id").val()] || 0;
-        obatTotal += obat3Price * $("#transaksi-jumlah_obat3").val();
-        
+        for (var i = 1; i <= 3; i++) {
+            var obatId = $("#transaksi-obat" + i + "_id").val();
+            var jumlah = parseInt($("#transaksi-jumlah" + i).val()) || 0;
+            var price = obatPrice[obatId] || 0;
+            obatTotal += price * jumlah;
+        }
+
         var totalPrice = tindakanTotal + obatTotal;
         totalPriceField.val(totalPrice);
+        $("#total-price-display").text(totalPrice);
     }
 
     $("input[name=\'Transaksi[tindakanIds][]\']").change(updateTotalPrice);
-    $("#transaksi-obat1_id").change(updateTotalPrice);
-    $("#transaksi-jumlah_obat1").change(updateTotalPrice);
-    $("#transaksi-obat2_id").change(updateTotalPrice);
-    $("#transaksi-jumlah_obat2").change(updateTotalPrice);
-    $("#transaksi-obat3_id").change(updateTotalPrice);
-    $("#transaksi-jumlah_obat3").change(updateTotalPrice);
-    updateTotalPrice();');
+    for (var i = 1; i <= 3; i++) {
+        $("#transaksi-obat" + i + "_id").change(updateTotalPrice);
+        $("#transaksi-jumlah" + i).change(updateTotalPrice);
+    }
+
+    updateTotalPrice();
+');
 ?>

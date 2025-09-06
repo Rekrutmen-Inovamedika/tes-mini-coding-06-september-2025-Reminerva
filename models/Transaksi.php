@@ -64,6 +64,16 @@ class Transaksi extends \yii\db\ActiveRecord
             $transaksiObat->obat_id = $this->obat3_id;
             $transaksiObat->jumlah = $this->jumlah3;
             $transaksiObat->save();
+
+            $total_harga = 0;
+            foreach ($this->transaksiTindakans as $transaksiTindakan) {
+                $total_harga += $transaksiTindakan->tindakan->harga;
+            }
+            foreach ($this->transaksiObats as $transaksiObat) {
+                $total_harga += $transaksiObat->obat->harga * $transaksiObat->jumlah;
+            }
+            $this->total_harga = $total_harga;
+            $this->save();
         }
     }
     public static function tableName()
@@ -78,13 +88,15 @@ class Transaksi extends \yii\db\ActiveRecord
     {
         return [
             [['pasien_id'], 'required'],
-            [['pasien_id', 'total_harga'], 'integer'],
+            [['pasien_id'], 'integer'],
             [['tanggal_transaksi'], 'default', 'value' => date('Y-m-d')],
-            [['obat1_id', 'obat2_id', 'obat3_id'], 'integer'],
+            [['obat1_id', 'obat2_id', 'obat3_id', 'jumlah1', 'jumlah2', 'jumlah3'], 'integer'],
+            [['jumlah1', 'jumlah2', 'jumlah3'], 'default', 'value' => 1],
             [['tindakanIds'], 'required', 'message' => 'Pilih minimal satu tindakan.'],
             [['pasien_id'], 'exist', 'skipOnError' => true, 'targetClass' => Pasien::class, 'targetAttribute' => ['pasien_id' => 'id']],
         ];
     }
+
 
     /**
      * {@inheritdoc}
@@ -140,13 +152,13 @@ class Transaksi extends \yii\db\ActiveRecord
     {
         $total = 0;
         if ($this->obat1_id) {
-            $total += $this->jumlah_obat1 * $this->obat1->harga;
+            $total += $this->jumlah1 * $this->obat1->harga;
         }
         if ($this->obat2_id) {
-            $total += $this->jumlah_obat2 * $this->obat2->harga;
+            $total += $this->jumlah2 * $this->obat2->harga;
         }
         if ($this->obat3_id) {
-            $total += $this->jumlah_obat3 * $this->obat3->harga;
+            $total += $this->jumlah3 * $this->obat3->harga;
         }
         return $total;
     }
